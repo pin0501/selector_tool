@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動態選項選擇器 (含符號化刪除和本地存儲)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .option-input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .option-input {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        .remove-btn {
+            background-color: transparent;
+            color: #ff4c4c;
+            border: none;
+            border-radius: 5px;
+            padding: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        .remove-btn:hover {
+            background-color: #e0e0e0;
+            color: #ff1a1a;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .add-btn {
+            background-color: #008CBA;
+        }
+        .add-btn:hover {
+            background-color: #007bb5;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        label {
+            cursor: pointer;
+            color: #008CBA;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>請輸入選項</h2>
+    <div id="options-container">
+        <!-- 初始化的選項欄位將透過JavaScript動態生成 -->
+    </div>
+    <br>
+    <button class="add-btn" onclick="addOption()">新增欄位</button>
+    <button onclick="chooseOption()">選擇</button>
+    <button onclick="chooseOptionThreeTimes()">連續抽選三次</button>
+    <br><br>
+    <button onclick="exportOptions()">匯出選項檔案</button>
+    <label for="import-file">匯入選項檔案</label>
+    <input type="file" id="import-file" accept=".json" onchange="importOptions(event)">
+    <div id="result"></div>
+</div>
+
+<script>
+    window.onload = function() {
+        loadOptions();
+    }
+
+    function addOption(value = "") {
+        const container = document.getElementById('options-container');
+        const optionContainer = document.createElement('div');
+        optionContainer.className = 'option-input-container';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'option-input';
+        input.placeholder = `選項${container.children.length + 1}`;
+        input.value = value;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerText = '❌';
+        removeBtn.onclick = function() {
+            container.removeChild(optionContainer);
+            saveOptions();
+        };
+
+        optionContainer.appendChild(input);
+        optionContainer.appendChild(removeBtn);
+        container.appendChild(optionContainer);
+    }
+
+    function saveOptions() {
+        const options = document.getElementsByClassName('option-input');
+        const optionValues = [];
+        for (let i = 0; i < options.length; i++) {
+            const value = options[i].value.trim();
+            if (value) {
+                optionValues.push(value);
+            }
+        }
+        localStorage.setItem('savedOptions', JSON.stringify(optionValues));
+    }
+
+    function loadOptions() {
+        const savedOptions = localStorage.getItem('savedOptions');
+        if (savedOptions) {
+            const optionsArray = JSON.parse(savedOptions);
+            for (const option of optionsArray) {
+                addOption(option);
+            }
+        } else {
+            addOption();
+        }
+    }
+
+    function chooseOption() {
+        const options = document.getElementsByClassName('option-input');
+        const validOptions = [];
+        for (let i = 0; i < options.length; i++) {
+            const value = options[i].value.trim();
+            if (value) {
+                validOptions.push(value);
+            }
+        }
+        if (validOptions.length > 0) {
+            const randomOption = validOptions[Math.floor(Math.random() * validOptions.length)];
+            document.getElementById('result').innerText = `系統選擇了: ${randomOption}`;
+            saveOptions();
+        } else {
+            document.getElementById('result').innerText = "請輸入有效的選項。";
+        }
+    }
+
+    function chooseOptionThreeTimes() {
+        const options = document.getElementsByClassName('option-input');
+        const validOptions = [];
+        for (let i = 0; i < options.length; i++) {
+            const value = options[i].value.trim();
+            if (value) {
+                validOptions.push(value);
+            }
+        }
+        if (validOptions.length > 0) {
+            let firstPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+            let secondPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+            let thirdPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+
+            if (firstPick === secondPick && secondPick === thirdPick) {
+                document.getElementById('result').innerText = `系統連續三次選擇了: ${firstPick}`;
+            } else {
+                document.getElementById('result').innerText = `三次選擇結果不同，請再試一次。`;
+            }
+            saveOptions();
+        } else {
+            document.getElementById('result').innerText = "請輸入有效的選項。";
+        }
+    }
+
+    function exportOptions() {
+        const options = document.getElementsByClassName('option-input');
+        const optionValues = [];
+        for (let i = 0; i < options.length; i++) {
+            const value = options[i].value.trim();
+            if (value) {
+                optionValues.push(value);
+            }
+        }
+        const blob = new Blob([JSON.stringify(optionValues)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'options.json';
+        link.click();
+    }
+
+    function importOptions(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const optionsArray = JSON.parse(e.target.result);
+            const container = document.getElementById('options-container');
+            container.innerHTML = ''; // 清空現有選項
+            for (const option of optionsArray) {
+                addOption(option);
+            }
+            saveOptions(); // 匯入後存儲選項
+        };
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+</html>
