@@ -56,7 +56,7 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            margin: 5px 0; /* 增加按鈕間距 */
+            margin: 5px 0;
         }
         .add-btn {
             background-color: #008CBA;
@@ -200,20 +200,19 @@
         if (validOptions.length > 0) {
             document.getElementById('loading').style.display = 'block';  // 顯示loading圖示
 
-            setTimeout(() => {
+            // 啟動一個setInterval來持續抽選直到三次結果相同
+            let interval = setInterval(() => {
                 let firstPick = validOptions[Math.floor(Math.random() * validOptions.length)];
                 let secondPick = validOptions[Math.floor(Math.random() * validOptions.length)];
                 let thirdPick = validOptions[Math.floor(Math.random() * validOptions.length)];
 
-                document.getElementById('loading').style.display = 'none';  // 隱藏loading圖示
-
                 if (firstPick === secondPick && secondPick === thirdPick) {
+                    clearInterval(interval); // 當結果相同時停止抽選
+                    document.getElementById('loading').style.display = 'none';  // 隱藏loading圖示
                     document.getElementById('result').innerText = `系統連續三次選擇了: ${firstPick}`;
-                } else {
-                    document.getElementById('result').innerText = `三次選擇結果不同，請再試一次。`;
+                    saveOptions();
                 }
-                saveOptions();
-            }, 2000);  // 模擬抽選過程需2秒
+            }, 500);  // 每次抽選間隔500ms，直到符合條件為止
         } else {
             document.getElementById('result').innerText = "請輸入有效的選項。";
         }
