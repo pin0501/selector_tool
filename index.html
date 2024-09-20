@@ -52,24 +52,33 @@
         button {
             padding: 10px 20px;
             border: none;
-            background-color: #4CAF50;
             color: white;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #result {
-            margin-top: 20px;
-            font-size: 18px;
+            margin: 5px 0; /* 增加按鈕間距 */
         }
         .add-btn {
             background-color: #008CBA;
         }
         .add-btn:hover {
             background-color: #007bb5;
+        }
+        .choose-btn {
+            background-color: #4CAF50;
+        }
+        .choose-btn:hover {
+            background-color: #45a049;
+        }
+        .choose-three-btn {
+            background-color: #FF5722;
+        }
+        .choose-three-btn:hover {
+            background-color: #E64A19;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
         }
         input[type="file"] {
             display: none;
@@ -78,6 +87,10 @@
             cursor: pointer;
             color: #008CBA;
             text-decoration: underline;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -90,13 +103,17 @@
     </div>
     <br>
     <button class="add-btn" onclick="addOption()">新增欄位</button>
-    <button onclick="chooseOption()">選擇</button>
-    <button onclick="chooseOptionThreeTimes()">連續抽選三次</button>
+    <button class="choose-btn" onclick="chooseOption()">選擇</button>
+    <button class="choose-three-btn" onclick="chooseOptionThreeTimes()">連續抽選三次</button>
     <br><br>
     <button onclick="exportOptions()">匯出選項檔案</button>
     <label for="import-file">匯入選項檔案</label>
     <input type="file" id="import-file" accept=".json" onchange="importOptions(event)">
     <div id="result"></div>
+    <div class="loading" id="loading">
+        <img src="https://i.imgur.com/llF5iyg.gif" alt="Loading" width="50">
+        正在抽選中，請稍候...
+    </div>
 </div>
 
 <script>
@@ -179,17 +196,24 @@
                 validOptions.push(value);
             }
         }
-        if (validOptions.length > 0) {
-            let firstPick = validOptions[Math.floor(Math.random() * validOptions.length)];
-            let secondPick = validOptions[Math.floor(Math.random() * validOptions.length)];
-            let thirdPick = validOptions[Math.floor(Math.random() * validOptions.length)];
 
-            if (firstPick === secondPick && secondPick === thirdPick) {
-                document.getElementById('result').innerText = `系統連續三次選擇了: ${firstPick}`;
-            } else {
-                document.getElementById('result').innerText = `三次選擇結果不同，請再試一次。`;
-            }
-            saveOptions();
+        if (validOptions.length > 0) {
+            document.getElementById('loading').style.display = 'block';  // 顯示loading圖示
+
+            setTimeout(() => {
+                let firstPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+                let secondPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+                let thirdPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+
+                document.getElementById('loading').style.display = 'none';  // 隱藏loading圖示
+
+                if (firstPick === secondPick && secondPick === thirdPick) {
+                    document.getElementById('result').innerText = `系統連續三次選擇了: ${firstPick}`;
+                } else {
+                    document.getElementById('result').innerText = `三次選擇結果不同，請再試一次。`;
+                }
+                saveOptions();
+            }, 2000);  // 模擬抽選過程需2秒
         } else {
             document.getElementById('result').innerText = "請輸入有效的選項。";
         }
