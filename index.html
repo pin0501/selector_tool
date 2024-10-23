@@ -200,14 +200,31 @@
         }
 
         function chooseOptionThreeTimes() {
-            const options = Array.from(document.getElementsByClassName('option-input')).map(input => input.value.trim()).filter(value => value);
-            if (options.length) {
-                document.getElementById('loading').style.display = 'block';
-                setTimeout(() => {
-                    const picks = Array(3).fill().map(() => options[Math.floor(Math.random() * options.length)]);
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('result').innerText = picks.every(pick => pick === picks[0]) ? `系統連續三次選擇了: ${picks[0]}` : "三次選擇結果不同，請再試一次。";
-                }, 2000);
+            const options = document.getElementsByClassName('option-input');
+            const validOptions = [];
+            for (let i = 0; i < options.length; i++) {
+                const value = options[i].value.trim();
+                if (value) {
+                    validOptions.push(value);
+                }
+            }
+    
+            if (validOptions.length > 0) {
+                document.getElementById('loading').style.display = 'block';  // 顯示loading圖示
+    
+                // 啟動一個setInterval來持續抽選直到三次結果相同
+                let interval = setInterval(() => {
+                    let firstPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+                    let secondPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+                    let thirdPick = validOptions[Math.floor(Math.random() * validOptions.length)];
+                    
+                    if (firstPick === secondPick && secondPick === thirdPick) {
+                        clearInterval(interval); // 當結果相同時停止抽選
+                        document.getElementById('loading').style.display = 'none';  // 隱藏loading圖示
+                        document.getElementById('result').innerText = `系統連續三次選擇了: ${firstPick}`;
+                        saveOptions();
+                    }
+                }, 5);  // 每次抽選間隔5ms，直到符合條件為止
             } else {
                 document.getElementById('result').innerText = "請輸入有效的選項。";
             }
